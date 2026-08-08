@@ -43,11 +43,25 @@ jobs:
       # A digest is what makes a rollback possible; a moving tag lets two replicas of one
       # Deployment run different code. On `prod` that is not a preference, so the branch that a
       # human merges into is the branch where it is checked.
+      #
+      # Two ways to not be a digest, and only one of them is a defect. `REPLACED_BY_CI` is the
+      # bootstrap value this repository ships with — it means *nothing has ever been released*,
+      # it is true the day the branch is created, and no commit can fix it before the first
+      # release does. Failing on it made prod permanently red out of the box, which is how a
+      # gate teaches people to ignore it. Anything else that is not a digest was put there by a
+      # human, and that is the thing worth stopping.
       - name: On prod, every image is pinned to a digest
         if: github.base_ref == 'prod' || github.ref_name == 'prod'
         run: |
-          if kustomize build . | grep -E '^\s+image: ' | grep -v '@sha256:'; then
-            echo '✗ an image above is not pinned to a digest'
+          unpinned=$(kustomize build . | sed -n 's/^[[:space:]]*image: //p' | grep -v '@sha256:' || true)
+          [ -n "$unpinned" ] || { echo '✓ every image is a digest'; exit 0; }
+
+          moving=$(printf '%s\n' "$unpinned" | grep -v ':REPLACED_BY_CI$' || true)
+          if [ -n "$moving" ]; then
+            printf '%s\n' "$moving"
+            echo '::error::the image(s) above are a moving tag, not a digest. Two replicas of one Deployment can then run different code, and "roll back to what was running" has no answer.'
             exit 1
           fi
-          echo '✓ every image is a digest'
+
+          printf '%s\n' "$unpinned"
+          echo '::warning::prod has never been released — this is the bootstrap placeholder, not a moving tag. The first release pull request replaces it with a digest, and this warning goes with it.'
