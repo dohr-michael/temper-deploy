@@ -1,0 +1,29 @@
+# The single entry point. Everything the browser touches — the portal, `/api`, `/@` — arrives
+# here and is composed by spa-server behind it. The API's Service is deliberately absent.
+#
+# The host is one of the three things that differ between `dev` and `prod`.
+#
+# **No TLS block, and none is missing.** Caddy sits in front of the cluster and owns the
+# certificate: it terminates HTTPS and holds the Let's Encrypt account. Traefik therefore only
+# ever sees plain http from it, which is what the `web` entrypoint below says. Adding a `tls:`
+# section here — or cert-manager — would be a second thing answering for the certificate, and
+# the renewal would then have two owners.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: temper
+  annotations:
+    # http only: TLS is terminated upstream by Caddy, so binding the `websecure` entrypoint
+    # would mean a certificate Traefik has no reason to hold.
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: temper-dev.dohrm.fr
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: temper-web
+                port: { name: http }

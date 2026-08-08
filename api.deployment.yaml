@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temper-api
+spec:
+  # One replica is a maintenance window, not a deployment — and on dev that is the honest
+  # trade. It goes to two, with a PodDisruptionBudget, the day a coach is waiting on it.
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: { app: temper-api }
+  template:
+    metadata:
+      labels: { app: temper-api }
+    spec:
+      # Longer than the drain: the server finishes in-flight requests on SIGTERM, and a grace
+      # period equal to the drain kills them on every deploy.
+      terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: api
+          image: ghcr.io/dohr-michael/temper-api
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: http, containerPort: 9000 }
+          envFrom:
+            - configMapRef: { name: temper }
+          env:
+            # The one value that carries a credential, so the only one from a Secret — and that
+            # Secret belongs to the infra repository, which creates it in the namespace before
+            # anything here is synced. Nothing in this repository creates, reads back or prunes
+            # it; a missing `infra-secrets` is a pod that never starts, which is the right
+            # failure.
+            - name: TEMPER_MONGODB_URI
+              valueFrom:
+                secretKeyRef: { name: infra-secrets, key: MONGO_URI_SECRET }
+          # Liveness never touches a dependency: a slow Mongo would otherwise restart every
+          # replica at once, turning a degradation into an outage.
+          livenessProbe:
+            httpGet: { path: /@/live, port: http }
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: { path: /@/ready, port: http }
+            periodSeconds: 5
+          # The boot reads the provider's discovery document over the network, so first
+          # readiness is slower than steady state. That is what a startup probe is for, rather
+          # than a generous liveness delay.
+          startupProbe:
+            httpGet: { path: /@/live, port: http }
+            failureThreshold: 30
+            periodSeconds: 2
+          resources:
+            requests: { cpu: 50m, memory: 96Mi }
+            # Memory is not compressible, so the limit is the request. No CPU limit: throttling
+            # a request-serving process at the limit produces the tail latency you were trying
+            # to avoid.
+            limits: { memory: 96Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }

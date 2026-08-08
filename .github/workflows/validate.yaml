@@ -1,0 +1,53 @@
+name: Manifests
+
+# The only gate this repository can have, and it is worth having: `kustomize build` catches a
+# manifest that does not render — a bad digest edit, a resource removed from disk but not from
+# the list, a generator that no longer resolves — *before* ArgoCD reports it as a failed sync
+# on a branch that is already deployed.
+#
+# It never applies anything. The cluster is ArgoCD's, and this workflow does not have, or want,
+# credentials for it.
+
+on:
+  push:
+    branches: [dev, prod]
+  pull_request:
+    branches: [dev, prod]
+
+concurrency:
+  group: manifests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Pinned, like every tool in a gate: an unpinned one means the gate can change under a commit
+  # that changed nothing.
+  KUSTOMIZE_VERSION: '5.7.1'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure kustomize
+        run: |
+          curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin kustomize
+
+      - name: The manifests render
+        run: kustomize build . > /dev/null
+
+      # A digest is what makes a rollback possible; a moving tag lets two replicas of one
+      # Deployment run different code. On `prod` that is not a preference, so the branch that a
+      # human merges into is the branch where it is checked.
+      - name: On prod, every image is pinned to a digest
+        if: github.base_ref == 'prod' || github.ref_name == 'prod'
+        run: |
+          if kustomize build . | grep -E '^\s+image: ' | grep -v '@sha256:'; then
+            echo '✗ an image above is not pinned to a digest'
+            exit 1
+          fi
+          echo '✓ every image is a digest'

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: temper-api
+spec:
+  # Cluster-internal, and it stays that way: the browser reaches the API through spa-server's
+  # proxy on the portal's own origin, so **the API needs no ingress at all**. One entry point to
+  # the product, and one fewer surface to secure.
+  type: ClusterIP
+  selector: { app: temper-api }
+  ports:
+    - { name: http, port: 9000, targetPort: http }

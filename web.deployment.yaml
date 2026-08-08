@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temper-web
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: { app: temper-web }
+  template:
+    metadata:
+      labels: { app: temper-web }
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: web
+          image: ghcr.io/dohr-michael/temper-web
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: http, containerPort: 8080 }
+          env:
+            # Same origin for the browser: /api and /@ are proxied to the API's ClusterIP.
+            - name: API_UPSTREAM
+              value: http://temper-api:9000
+          # spa-server reads only what its config.js template references. A missing one aborts
+          # the boot listing every hole at once — which is why a broken config here is a
+          # CrashLoop and not a portal serving `undefined/authorize`.
+          envFrom:
+            - configMapRef: { name: temper }
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 32Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
