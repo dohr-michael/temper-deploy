@@ -18,6 +18,8 @@ spec:
     spec:
       # Longer than the drain: the server finishes in-flight requests on SIGTERM, and a grace
       # period equal to the drain kills them on every deploy.
+      imagePullSecrets:
+        - name: ghcr-login-secret
       terminationGracePeriodSeconds: 45
       securityContext:
         runAsNonRoot: true

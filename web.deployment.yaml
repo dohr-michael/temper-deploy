@@ -14,6 +14,8 @@ spec:
     metadata:
       labels: { app: temper-web }
     spec:
+      imagePullSecrets:
+        - name: ghcr-login-secret
       terminationGracePeriodSeconds: 20
       securityContext:
         runAsNonRoot: true
