@@ -16,20 +16,20 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - api.deployment.yaml
-  - api.service.yaml
-  - web.deployment.yaml
-  - web.service.yaml
-  - ingress.yaml
+- api.deployment.yaml
+- api.service.yaml
+- web.deployment.yaml
+- web.service.yaml
+- ingress.yaml
 
-images:
   # `REPLACED_BY_CI` is not a placeholder waiting for a human: the first CI run on this branch
   # replaces both with digests. Until then the pods do not pull, loudly, which is the correct
   # answer to "nothing has been built yet".
-  - name: ghcr.io/dohr-michael/temper-api
-    newTag: REPLACED_BY_CI
-  - name: ghcr.io/dohr-michael/temper-web
-    newTag: REPLACED_BY_CI
+images:
+- digest: sha256:8ed2392149a9c0906f047f4d1c8c5ad767d5b5f29b27aa4ad8713dbb2d7ea550
+  name: ghcr.io/dohr-michael/temper-api
+- digest: sha256:231fe7e0c6a16295b1433fa65f7ae2d8f2a597bf8c25e02488846a9d3be11c0f
+  name: ghcr.io/dohr-michael/temper-web
 
 # Non-secret configuration, in one place. `configMapGenerator` appends a content hash to the
 # name and rewrites the references, so **a config change rolls the pods** — which is the whole
@@ -38,14 +38,14 @@ images:
 # None of these is a credential: an authorization-code + PKCE flow has no client secret, and the
 # authority, client id and audience are all visible in the browser's first redirect. The one
 # value that does carry one — the MongoDB URI — is not here; it comes from `infra-secrets`.
-configMapGenerator:
-  - name: temper
-    literals:
-      - TEMPER_OIDC_ISSUER=https://dohrm.eu.auth0.com/
-      - TEMPER_OIDC_AUDIENCE=https://temper.com
       # The browser's view of the same provider. Rendered into config.js at boot.
-      - TEMPER_OIDC_AUTHORITY=https://dohrm.eu.auth0.com
-      - TEMPER_OIDC_CLIENT_ID=W0NiUgWHIwK6UR6oAeBywPJqAc8o5l5q
       # Same-origin: the portal reaches the API through spa-server's proxy, so no origin has to
       # be allowed. An empty value is "allow nothing", which is what this needs to be.
-      - TEMPER_CORS_ALLOWED_ORIGINS=
+configMapGenerator:
+- literals:
+  - TEMPER_OIDC_ISSUER=https://dohrm.eu.auth0.com/
+  - TEMPER_OIDC_AUDIENCE=https://temper.com
+  - TEMPER_OIDC_AUTHORITY=https://dohrm.eu.auth0.com
+  - TEMPER_OIDC_CLIENT_ID=W0NiUgWHIwK6UR6oAeBywPJqAc8o5l5q
+  - TEMPER_CORS_ALLOWED_ORIGINS=
+  name: temper
