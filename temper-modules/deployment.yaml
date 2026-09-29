@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temper-modules
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: temper-modules
+  template:
+    metadata:
+      labels:
+        app: temper-modules
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login-secret
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: temper-modules
+          image: ghcr.io/dohr-michael/temper-modules
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9000
+          env:
+            - name: TEMPER_MODULES_MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: temper-modules-secrets
+                  key: MONGODB_URI
+          livenessProbe:
+            httpGet:
+              path: /@/live
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /@/live
+              port: http
+            periodSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /@/live
+              port: http
+            periodSeconds: 2
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              memory: 96Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

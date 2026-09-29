@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: temper-modules
+spec:
+  type: ClusterIP
+  selector:
+    app: temper-modules
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
