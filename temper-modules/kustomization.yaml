@@ -2,11 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - deployment.yaml
-  - service.yaml
-  - ingress.yaml
+- deployment.yaml
+- service.yaml
+- ingress.yaml
 
 # CI replaces this bootstrap marker with the immutable digest it has just built.
 images:
-  - name: ghcr.io/dohr-michael/temper-modules
-    newTag: REPLACED_BY_CI
+- digest: sha256:6b24f74c337f86bff56dc2dffd5cb6d5283b7ebad4bcc7b74a1b5f6a0f3515fd
+  name: ghcr.io/dohr-michael/temper-modules
