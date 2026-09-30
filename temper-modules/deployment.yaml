@@ -34,8 +34,8 @@ spec:
             - name: TEMPER_MODULES_MONGODB_URI
               valueFrom:
                 secretKeyRef:
-                  name: temper-modules-secrets
-                  key: MONGODB_URI
+                  name: infra-secrets
+                  key: MONGO_URI_SECRET
           livenessProbe:
             httpGet:
               path: /@/live
