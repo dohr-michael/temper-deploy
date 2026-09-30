@@ -6,9 +6,13 @@ only component that applies these resources to the cluster.
 
 Before its first sync, the destination namespace needs:
 
-- `Secret/temper-modules-secrets`, with `MONGODB_URI` set to the connection URI
-  of the MongoDB database dedicated to Temper Modules;
+- `Secret/infra-secrets`, with `MONGO_URI_SECRET` set to the connection URI
+  of the shared MongoDB service;
 - `Secret/ghcr-login-secret` if `ghcr.io/dohr-michael/temper-modules` is private.
 
-The product pipeline replaces `REPLACED_BY_CI` with an immutable image digest on
-the `dev` branch after a green push to `main`.
+The product pipeline commits an immutable image digest to the `dev` branch
+after a green push to `main`.
+
+The pod disables Kubernetes service-link environment variables. The generated
+`TEMPER_MODULES_PORT` value for `Service/temper-modules` would otherwise replace
+the image's numeric HTTP port with a TCP URL and prevent the API from starting.

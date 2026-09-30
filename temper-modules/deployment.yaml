@@ -16,6 +16,7 @@ spec:
       labels:
         app: temper-modules
     spec:
+      enableServiceLinks: false
       imagePullSecrets:
         - name: ghcr-login-secret
       terminationGracePeriodSeconds: 30
