@@ -21,6 +21,7 @@ resources:
 - web.deployment.yaml
 - web.service.yaml
 - ingress.yaml
+- temper-modules
 
   # `REPLACED_BY_CI` is not a placeholder waiting for a human: the first CI run on this branch
   # replaces both with digests. Until then the pods do not pull, loudly, which is the correct
