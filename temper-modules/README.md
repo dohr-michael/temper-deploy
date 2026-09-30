@@ -6,8 +6,8 @@ only component that applies these resources to the cluster.
 
 Before its first sync, the destination namespace needs:
 
-- `Secret/infra-secrets`, with `MONGO_URI_SECRET` set to the connection URI
-  of the shared MongoDB service;
+- `Secret/temper-modules-secrets`, with `MONGODB_URI` set to the connection URI
+  for a dedicated `temper_modules` user and database on the shared MongoDB service;
 - `Secret/ghcr-login-secret` if `ghcr.io/dohr-michael/temper-modules` is private.
 
 The product pipeline commits an immutable image digest to the `dev` branch
