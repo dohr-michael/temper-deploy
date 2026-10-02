@@ -8,5 +8,5 @@ resources:
 
 # CI replaces this bootstrap marker with the immutable digest it has just built.
 images:
-- digest: sha256:bded767fef5482b410a4b2998ef873d7ba42d3bbb023dcb1013fbd6a3119d0db
+- digest: sha256:0192a5c9aab6ffe452983413281ffa5da97723a9984d05bd6b067919c96ffddb
   name: ghcr.io/dohr-michael/temper-modules
