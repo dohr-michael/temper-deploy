@@ -31,9 +31,12 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - { name: http, containerPort: 9000 }
+            - { name: mcp, containerPort: 9001 }
           envFrom:
             - configMapRef: { name: temper }
           env:
+            - name: TEMPER_MCP_BIND
+              value: 0.0.0.0:9001
             # The one value that carries a credential, so the only one from a Secret — and that
             # Secret belongs to the infra repository, which creates it in the namespace before
             # anything here is synced. Nothing in this repository creates, reads back or prunes

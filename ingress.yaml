@@ -21,6 +21,12 @@ spec:
     - host: temper-dev.dohrm.fr
       http:
         paths:
+          - path: /mcp
+            pathType: Prefix
+            backend:
+              service:
+                name: temper-api
+                port: { name: mcp }
           - path: /
             pathType: Prefix
             backend:

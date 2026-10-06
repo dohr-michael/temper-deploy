@@ -10,3 +10,4 @@ spec:
   selector: { app: temper-api }
   ports:
     - { name: http, port: 9000, targetPort: http }
+    - { name: mcp, port: 9001, targetPort: mcp }
