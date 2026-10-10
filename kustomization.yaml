@@ -44,9 +44,9 @@ images:
       # be allowed. An empty value is "allow nothing", which is what this needs to be.
 configMapGenerator:
 - literals:
-  - TEMPER_OIDC_ISSUER=https://auth.dohrm.fr/application/o/temper-dev/
-  - TEMPER_OIDC_AUDIENCE=temper-dev
-  - TEMPER_OIDC_AUTHORITY=https://auth.dohrm.fr/application/o/temper-dev/
-  - TEMPER_OIDC_CLIENT_ID=temper-dev
+  - TEMPER_OIDC_ISSUER=https://zitadel.dohrm.fr
+  - TEMPER_OIDC_AUDIENCE=394461415827637310
+  - TEMPER_OIDC_AUTHORITY=https://zitadel.dohrm.fr
+  - TEMPER_OIDC_CLIENT_ID=394461415827637310
   - TEMPER_CORS_ALLOWED_ORIGINS=
   name: temper
