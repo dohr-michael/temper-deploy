@@ -27,9 +27,9 @@ resources:
   # replaces both with digests. Until then the pods do not pull, loudly, which is the correct
   # answer to "nothing has been built yet".
 images:
-- digest: sha256:90575c970670886671ff5b7b57901e9d81b6d8fad0d1980bbb5ab3bdff1f748b
+- digest: sha256:5753559281f835acef437e31bf1289d9d1fdf8feeb88633736ebf716c03dd2f6
   name: ghcr.io/dohr-michael/temper-api
-- digest: sha256:085e64b64d67acc816ca70a44187e87cff31c30b0f9b83c0e12fbd9dae1aa35a
+- digest: sha256:951ee5d375608419d467eb7ec777f028091d7b04287566a09d8cbc16d04af1ba
   name: ghcr.io/dohr-michael/temper-web
 
 # Non-secret configuration, in one place. `configMapGenerator` appends a content hash to the
